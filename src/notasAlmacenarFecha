@@ -1,0 +1,114 @@
+Anotacion de IA  para hacer bien la selección de FECHAS:
+
+
+Para KOEL te recomiendo utilizar `LocalDate`**&#x20;de Java**, ya que es la clase más adecuada para representar fechas sin horas, como la fecha de inicio y finalización de una obra.
+
+Además, es fácil conectarla con PostgreSQL y con el `DatePicker` de JavaFX.
+
+## **1. ¿Qué clase de fecha utilizar?**
+
+Java tiene varias clases para fechas:
+
+| Clase           | Uso                                            |
+| --------------- | ---------------------------------------------- |
+| `Date`          | Clase antigua de Java.                         |
+| `LocalDate`     | Fecha sin hora. Recomendada.                   |
+| `LocalDateTime` | Fecha y hora.                                  |
+| `Timestamp`     | Fecha y hora utilizada habitualmente con JDBC. |
+
+Para KOEL utilizaremos `LocalDate`.
+
+## **2. ¿Cómo quedaría en Obra.java?**
+
+Por ejemplo, tu clase `Obra` podría tener estos atributos:
+
+```
+import java.time.LocalDate;
+
+public class Obra {
+
+    private int id;
+    private String nombre;
+    private String direccion;
+    private LocalDate fechaInicio;
+    private LocalDate fechaFin;
+    private String estado;
+
+}
+```
+
+No necesitas utilizar `Date` ni convertir las fechas a texto dentro del modelo.
+
+## **3. ¿Cómo recibes la fecha desde FXML?**
+
+JavaFX tiene un componente llamado `DatePicker`, que permite seleccionar una fecha mediante un calendario.
+
+En Scene Builder puedes arrastrar un DatePicker a tu formulario.
+
+Por ejemplo, puedes llamarlo:
+
+`dpFechaInicio`
+
+Y en tu `ObraController.java` recoger su valor así:
+
+```
+LocalDate fechaInicio = dpFechaInicio.getValue();
+```
+
+¡Así de sencillo! El DatePicker ya devuelve un `LocalDate`.
+
+## **4. ¿Cómo guardas la fecha en PostgreSQL?**
+
+En tu base de datos, utiliza el tipo:
+
+```
+fecha_inicio DATE,
+fecha_fin DATE
+```
+
+Desde JDBC puedes guardar la fecha así:
+
+```
+ps.setDate(4, java.sql.Date.valueOf(obra.getFechaInicio()));
+```
+
+Y para recuperarla:
+
+```
+LocalDate fecha = rs.getDate("fecha_inicio").toLocalDate();
+```
+
+No necesitas almacenar la fecha como texto.
+
+## **5. ¿Cómo mostrarla como dd/MM/yy?**
+
+Aunque Java y PostgreSQL trabajen internamente con fechas, puedes mostrarla en el formato español cuando la necesites:
+
+```
+DateTimeFormatter formato =
+    DateTimeFormatter.ofPattern("dd/MM/yy");
+
+String fechaTexto = fechaInicio.format(formato);
+```
+
+Por ejemplo:
+
+Fecha seleccionada
+
+**24/11/26**
+
+Valor almacenado
+
+**2026-11-24**
+
+## **Mi recomendación para KOEL**
+
+Utiliza siempre esta combinación:
+
+- **FXML:** `DatePicker` para seleccionar fechas.
+- **Model:** `LocalDate` para guardar las fechas en los objetos Java.
+- **PostgreSQL:** `DATE` para almacenar las fechas.
+- **DAO:** `java.sql.Date.valueOf()` y `.toLocalDate()` para las conversiones.
+- **Interfaz:** `dd/MM/yy` para mostrar las fechas cuando quieras ese formato.
+
+Así tendrás un sistema sencillo, compatible con JavaFX y PostgreSQL, y evitarás muchos problemas de conversiones de fechas.
